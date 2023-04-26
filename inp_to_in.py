@@ -9,7 +9,6 @@ CLEAR_SCREEN_STRING_CODE = "\033c"
 AVG_CHARS_LIMIT_FOR_DOTS = 96
 MAX_CHARS_LIMIT_FOR_DOTS = 97
 SIGN_DIGIT_DOT = 3
-REGEX_SIGNED_NUMBER = r"[+-]?\d+"
 REGEX_FLOAT_NUMBER = r"([+-]?\d+)(\.\d+)?([eE][+-]?\d+)?"
 REGEX_STRICT_FLOAT_NUMBER = r"(?:[+-]?\d+)(?:\.\d+)(?:[eE][+-]?\d+)?"
 REGEX_SPACE_AROUND_COMMAS = r"\s*,\s*"

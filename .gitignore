@@ -1,2 +1,5 @@
 # Folders
 .venv/
+
+# Interactive Notebook Files
+*.ipynb
