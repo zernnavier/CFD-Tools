@@ -1,5 +1,6 @@
 # Folders
 .venv/
+.vscode/
 
 # Interactive Notebook Files
 *.ipynb

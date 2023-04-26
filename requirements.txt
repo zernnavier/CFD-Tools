@@ -1,1 +1,3 @@
+black
 aiofiles
+polars[all]
