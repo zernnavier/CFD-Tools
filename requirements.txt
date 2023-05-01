@@ -1,3 +1,4 @@
 black
+ruff
 aiofiles
 polars[all]

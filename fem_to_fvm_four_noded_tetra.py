@@ -59,7 +59,7 @@ class FilePaths(NamedTuple):
 
 class Node(Enum):
     sentinal = 0
-    node = "number"
+    node = "node"
     x = "x"
     y = "y"
     z = "z"
@@ -67,7 +67,7 @@ class Node(Enum):
 
 class Elem(Enum):
     sentinal = 0
-    elem = "number"
+    elem = "elem"
     f1 = "f1"
     f2 = "f2"
     f3 = "f3"
@@ -114,10 +114,10 @@ def get_args():
 def node_dict(node: int, x: float = None, y: float = None, z: float = None):
     args = locals()
     if node == Node.sentinal:
-        return {getattr(Node, arg).value: [] for arg in args.keys()}
+        return {Node[arg].value: [] for arg in args.keys()}
     return {
-        getattr(Node, arg).value: [Node.sentinal.value if value is None else value]
-        for arg, value in args
+        Node[arg].value: [Node.sentinal.value if value is None else value]
+        for arg, value in args.items()
     }
 
 
@@ -134,10 +134,10 @@ def elem_dict(
 ):
     args = locals()
     if elem == Elem.sentinal:
-        return {getattr(Node, arg).value: [] for arg in args.keys()}
+        return {Elem[arg].value: [] for arg in args.keys()}
     return {
-        getattr(Node, arg).value: [Elem.sentinal.value if value is None else value]
-        for arg, value in args
+        Elem[arg].value: [Elem.sentinal.value if value is None else value]
+        for arg, value in args.items()
     }
 
 
@@ -160,11 +160,11 @@ def load_node_and_elems(files, df_nodes, df_elems):
             if reg_res_elem:
                 df_elem = pl.DataFrame(
                     elem_dict(
-                        int(reg_res_node.group(1)),
-                        int(reg_res_node.group(2)),
-                        int(reg_res_node.group(3)),
-                        int(reg_res_node.group(4)),
-                        int(reg_res_node.group(5)),
+                        int(reg_res_elem.group(1)),
+                        int(reg_res_elem.group(2)),
+                        int(reg_res_elem.group(3)),
+                        int(reg_res_elem.group(4)),
+                        int(reg_res_elem.group(5)),
                     ),
                     schema=ELEM_SCHEMA,
                 )
@@ -179,8 +179,10 @@ def main():
 
     load_node_and_elems(files, df_nodes, df_elems)
 
-    max_nodes = df_nodes[:, Node.node.value].max().item()
-    max_elems = df_elems[:, Elem.node.value].max().item()
+    max_nodes, _ = df_nodes.shape
+    max_elems, _ = df_elems.shape
+
+    df_elems[0, 0]
 
     x_max = df_nodes[:, Node.x.value].max().item()
     x_min = df_nodes[:, Node.x.value].min().item()
@@ -191,8 +193,10 @@ def main():
         files.out_bc_file, mode="w"
     ) as out_bc_file:
         out_grid_file.write(f"{max_nodes} {max_elems}")
-        for i, x, y, z in df_nodes[:, :]:
-            out_grid_file.write(f"{i}  {x.item():.4f}  {y.item():.4f}  {z.item():.4f}")
+        print(f"{max_nodes} {max_elems}")
+        for node, x, y, z in df_nodes[:, :]:
+            print(f"{node}  {x.item():.4f}  {y.item():.4f}  {z.item():.4f}")
+            out_grid_file.write(f"{node}  {x.item():.4f}  {y.item():.4f}  {z.item():.4f}")
 
         for i in range(max_elems):
             f1, f2, f3, f4 = [ser.item() for ser in df_elems[i, 1:5]]
@@ -235,10 +239,15 @@ def main():
                 ) / 3.0
 
                 if abs(x_cen - x_min) < TOLERANCE:
-                    out_bc_file.write(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 1")
+                    print(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 1")
+                    out_bc_file.write(
+                        f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 1"
+                    )
                 elif abs(x_cen - x_max) < TOLERANCE:
+                    print(f"{i} {num_of_ghost} {BCType.outflow.value} 1")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.outflow.value} 1")
                 else:
+                    print(f"{i} {num_of_ghost} {BCType.wall.value} 1")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.wall.value} 1")
             if Elem.sentinal.value == df_elems[i, Elem.nf2.value]:
                 num_of_ghost += 1
@@ -251,10 +260,15 @@ def main():
                 ) / 3.0
 
                 if abs(x_cen - x_min) < TOLERANCE:
-                    out_bc_file.write(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 2")
+                    print(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 2")
+                    out_bc_file.write(
+                        f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 2"
+                    )
                 elif abs(x_cen - x_max) < TOLERANCE:
+                    print(f"{i} {num_of_ghost} {BCType.outflow.value} 2")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.outflow.value} 2")
                 else:
+                    print(f"{i} {num_of_ghost} {BCType.wall.value} 2")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.wall.value} 2")
             if Elem.sentinal.value == df_elems[i, Elem.nf3.value]:
                 num_of_ghost += 1
@@ -267,10 +281,15 @@ def main():
                 ) / 3.0
 
                 if abs(x_cen - x_min) < TOLERANCE:
-                    out_bc_file.write(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 3")
+                    print(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 3")
+                    out_bc_file.write(
+                        f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 3"
+                    )
                 elif abs(x_cen - x_max) < TOLERANCE:
+                    print(f"{i} {num_of_ghost} {BCType.outflow.value} 3")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.outflow.value} 3")
                 else:
+                    print(f"{i} {num_of_ghost} {BCType.wall.value} 3")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.wall.value} 3")
             if Elem.sentinal.value == df_elems[i, Elem.nf4.value]:
                 num_of_ghost += 1
@@ -283,12 +302,22 @@ def main():
                 ) / 3.0
 
                 if abs(x_cen - x_min) < TOLERANCE:
-                    out_bc_file.write(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 4")
+                    print(f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 4")
+                    out_bc_file.write(
+                        f"{i} {num_of_ghost} {BCType.inflow.value.subsonic.value} 4"
+                    )
                 elif abs(x_cen - x_max) < TOLERANCE:
+                    print(f"{i} {num_of_ghost} {BCType.outflow.value} 4")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.outflow.value} 4")
                 else:
+                    print(f"{i} {num_of_ghost} {BCType.wall.value} 4")
                     out_bc_file.write(f"{i} {num_of_ghost} {BCType.wall.value} 4")
-            
+
             nf1, nf2, nf3, nf4 = [ser.item() for ser in df_elems[i, 5:9]]
 
+            print(f"{i} {f1} {f2} {f3} {f4} {nf1} {nf2} {nf3} {nf4}")
             out_grid_file.write(f"{i} {f1} {f2} {f3} {f4} {nf1} {nf2} {nf3} {nf4}")
+
+
+if __name__ == "__main__":
+    main()
