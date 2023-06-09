@@ -6,6 +6,7 @@ from typing import NamedTuple
 
 
 CLEAR_SCREEN_STRING_CODE = "\033c"
+SCRIPT_PRECISION = 11
 AVG_CHARS_LIMIT_FOR_DOTS = 96
 MAX_CHARS_LIMIT_FOR_DOTS = 97
 SIGN_DIGIT_DOT = 3
@@ -120,7 +121,7 @@ def print_download_bar_percentage(percentage: int):
 
 
 def main():
-    ffpv = lambda x: formatted_floating_point_value(float(x), 11, 3)
+    ffpv = lambda x: formatted_floating_point_value(float(x), SCRIPT_PRECISION, 3)
 
     files = get_args()
 
